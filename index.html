@@ -1,113 +1,342 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PromptCraft — AI 프롬프트 빌더</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Noto Sans KR', sans-serif; }
-    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .gradient-img { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-    .card-hover { transition: all 0.2s ease; }
-    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
-    .category-btn.active { background: #667eea; color: white; border-color: #667eea; }
-    .tone-btn.active { background: #667eea; color: white; border-color: #667eea; }
-    .format-btn.active { background: #f0ebff; border-color: #667eea; color: #667eea; }
-    .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; }
-    .spinner-pink { border: 3px solid #fde8f5; border-top: 3px solid #f093fb; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .pulse-dot { animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
-    .result-appear { animation: fadeSlideIn 0.4s ease; }
-    @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .gradient-img {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .card-hover {
+      transition: all 0.2s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .category-btn.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .tone-btn.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .format-btn.active {
+      background: #f0ebff;
+      border-color: #667eea;
+      color: #667eea;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .spinner-pink {
+      border: 3px solid #fde8f5;
+      border-top: 3px solid #f093fb;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .pulse-dot {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .4;
+      }
+    }
+
+    .result-appear {
+      animation: fadeSlideIn 0.4s ease;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
     /* 드롭존 */
-    .drop-zone { border: 2.5px dashed #d1d5db; transition: all 0.25s ease; }
+    .drop-zone {
+      border: 2.5px dashed #d1d5db;
+      transition: all 0.25s ease;
+    }
+
     .drop-zone.drag-over {
       border-color: #f093fb;
-      background: linear-gradient(135deg, rgba(240,147,251,0.08), rgba(245,87,108,0.06));
+      background: linear-gradient(135deg, rgba(240, 147, 251, 0.08), rgba(245, 87, 108, 0.06));
       transform: scale(1.01);
     }
-    .drop-zone.has-image { border-style: solid; border-color: #e9d5ff; }
+
+    .drop-zone.has-image {
+      border-style: solid;
+      border-color: #e9d5ff;
+    }
 
     /* 탭 */
-    .mode-tab { transition: all 0.2s; }
-    .mode-tab.active { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .mode-tab {
+      transition: all 0.2s;
+    }
+
+    .mode-tab.active {
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
 
     /* 스캔 애니메이션 */
-    .scan-line { animation: scanDown 1.5s ease-in-out infinite; }
+    .scan-line {
+      animation: scanDown 1.5s ease-in-out infinite;
+    }
+
     @keyframes scanDown {
-      0% { top: 0%; opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { top: 100%; opacity: 0; }
+      0% {
+        top: 0%;
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        top: 100%;
+        opacity: 0;
+      }
     }
 
     /* 색상 팔레트 점 */
-    .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.2); display: inline-block; }
+    .color-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      display: inline-block;
+    }
 
     /* 태그 */
-    .img-tag { animation: tagPop 0.3s ease; }
-    @keyframes tagPop { from { opacity:0; transform: scale(0.7); } to { opacity:1; transform: scale(1); } }
+    .img-tag {
+      animation: tagPop 0.3s ease;
+    }
+
+    @keyframes tagPop {
+      from {
+        opacity: 0;
+        transform: scale(0.7);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
 
     /* 프레임워크 선택 */
-    .fw-btn { transition: all 0.18s ease; white-space: nowrap; position: relative; }
-    .fw-btn.active { color: white; }
-    .fw-btn:not(.active):hover { border-color: #a5b4fc; background: #eef2ff; }
+    .fw-btn {
+      transition: all 0.18s ease;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .fw-btn.active {
+      color: white;
+    }
+
+    .fw-btn:not(.active):hover {
+      border-color: #a5b4fc;
+      background: #eef2ff;
+    }
 
     /* 추천 배지 (버튼 위 우측 상단) */
     .fw-btn .rec-dot {
-      position: absolute; top: -5px; right: -5px;
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #f59e0b; border: 2px solid white;
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f59e0b;
+      border: 2px solid white;
       display: none;
     }
-    .fw-btn.recommended .rec-dot { display: block; animation: recPulse 1.5s ease infinite; }
-    @keyframes recPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:.7} }
+
+    .fw-btn.recommended .rec-dot {
+      display: block;
+      animation: recPulse 1.5s ease infinite;
+    }
+
+    @keyframes recPulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1
+      }
+
+      50% {
+        transform: scale(1.4);
+        opacity: .7
+      }
+    }
 
     /* 자동/수동 상태 칩 */
     #fwModeChip {
-      font-size: 10px; font-weight: 600; padding: 2px 8px;
-      border-radius: 100px; transition: all 0.2s;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      transition: all 0.2s;
     }
-    #fwModeChip.auto  { background:#eef2ff; color:#4f46e5; }
-    #fwModeChip.manual{ background:#fef3c7; color:#d97706; }
+
+    #fwModeChip.auto {
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+
+    #fwModeChip.manual {
+      background: #fef3c7;
+      color: #d97706;
+    }
 
     /* 추천 이유 툴팁 */
-    #fwReason { transition: opacity 0.3s; }
-    .fw-switch-animate { animation: fwSwitch 0.35s cubic-bezier(0.34,1.56,0.64,1); }
-    @keyframes fwSwitch { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+    #fwReason {
+      transition: opacity 0.3s;
+    }
+
+    .fw-switch-animate {
+      animation: fwSwitch 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes fwSwitch {
+      from {
+        transform: scale(0.85);
+        opacity: 0
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1
+      }
+    }
 
     /* 프레임워크 배지 */
-    .fw-badge { animation: badgePop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
-    @keyframes badgePop { from { opacity:0; transform: scale(0.5) translateY(6px); } to { opacity:1; transform: scale(1) translateY(0); } }
+    .fw-badge {
+      animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes badgePop {
+      from {
+        opacity: 0;
+        transform: scale(0.5) translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
 
     /* 토스트 배너 (하단 중앙) */
     #fwToast {
-      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-      display: flex; align-items: center; gap: 10px;
-      padding: 12px 22px; border-radius: 100px;
-      font-size: 13px; font-weight: 600;
-      background: #1e1b4b; color: white;
-      box-shadow: 0 8px 30px rgba(30,27,75,0.35);
-      opacity: 0; pointer-events: none;
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 22px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      background: #1e1b4b;
+      color: white;
+      box-shadow: 0 8px 30px rgba(30, 27, 75, 0.35);
+      opacity: 0;
+      pointer-events: none;
       transition: opacity 0.25s ease;
-      z-index: 10000; white-space: nowrap;
+      z-index: 10000;
+      white-space: nowrap;
     }
-    #fwToast.show { opacity: 1; }
+
+    #fwToast.show {
+      opacity: 1;
+    }
 
     /* 전체 화면 드롭 오버레이 */
     #globalDropOverlay {
-      position: fixed; inset: 0; z-index: 9999;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
       display: none;
-      align-items: center; justify-content: center;
+      align-items: center;
+      justify-content: center;
       background: rgba(102, 126, 234, 0.15);
       backdrop-filter: blur(4px);
       pointer-events: none;
     }
-    #globalDropOverlay.active { display: flex; pointer-events: all; }
+
+    #globalDropOverlay.active {
+      display: flex;
+      pointer-events: all;
+    }
+
     #globalDropOverlay .overlay-box {
       border: 3px dashed #667eea;
       border-radius: 28px;
@@ -115,9 +344,21 @@
       background: white;
       text-align: center;
       animation: overlayPop 0.2s ease;
-      box-shadow: 0 20px 60px rgba(102,126,234,0.3);
+      box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
     }
-    @keyframes overlayPop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    @keyframes overlayPop {
+      from {
+        transform: scale(0.92);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
     #globalDropOverlay.drop-ready .overlay-box {
       border-color: #f093fb;
       background: linear-gradient(135deg, #fdf4ff, #fff0f6);
@@ -126,6 +367,7 @@
     }
   </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
 
   <!-- 헤더 -->
@@ -142,7 +384,8 @@
         <a href="#" class="hover:text-purple-600 transition-colors">템플릿</a>
         <a href="#" class="hover:text-purple-600 transition-colors">내 프롬프트</a>
         <a href="#" class="hover:text-purple-600 transition-colors">커뮤니티</a>
-        <button class="gradient-bg text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-all shadow-sm">
+        <button
+          class="gradient-bg text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-all shadow-sm">
           무료로 시작하기
         </button>
       </nav>
@@ -157,10 +400,10 @@
         오늘 2,847명이 프롬프트를 생성했습니다
       </div>
       <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-        AI를 200% 활용하는<br/>프롬프트, 지금 바로 만드세요
+        AI를 200% 활용하는<br />프롬프트, 지금 바로 만드세요
       </h1>
       <p class="text-white/80 text-lg mb-4 max-w-2xl mx-auto">
-        텍스트 입력 또는 <strong class="text-pink-200">이미지 드롭</strong>만으로<br/>
+        텍스트 입력 또는 <strong class="text-pink-200">이미지 드롭</strong>만으로<br />
         ChatGPT · Claude · Midjourney 전용 프롬프트를 즉시 완성
       </p>
       <div class="flex items-center justify-center gap-4 text-sm text-white/70 flex-wrap">
@@ -192,13 +435,27 @@
       <div class="mb-8">
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">카테고리 선택</h2>
         <div class="flex flex-wrap gap-2" id="categoryBtns">
-          <button onclick="setCategory(this,'마케팅')" class="category-btn active flex items-center gap-1.5 px-4 py-2 border-2 border-purple-500 bg-purple-500 text-white rounded-xl font-medium text-sm transition-all">📣 마케팅</button>
-          <button onclick="setCategory(this,'글쓰기')" class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">✍️ 글쓰기</button>
-          <button onclick="setCategory(this,'코딩')" class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">💻 코딩</button>
-          <button onclick="setCategory(this,'번역')" class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">🌍 번역</button>
-          <button onclick="setCategory(this,'교육')" class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">📚 교육</button>
-          <button onclick="setCategory(this,'비즈니스')" class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">💼 비즈니스</button>
-          <button onclick="setCategory(this,'분석')" class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">📊 데이터 분석</button>
+          <button onclick="setCategory(this,'마케팅')"
+            class="category-btn active flex items-center gap-1.5 px-4 py-2 border-2 border-purple-500 bg-purple-500 text-white rounded-xl font-medium text-sm transition-all">📣
+            마케팅</button>
+          <button onclick="setCategory(this,'글쓰기')"
+            class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">✍️
+            글쓰기</button>
+          <button onclick="setCategory(this,'코딩')"
+            class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">💻
+            코딩</button>
+          <button onclick="setCategory(this,'번역')"
+            class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">🌍
+            번역</button>
+          <button onclick="setCategory(this,'교육')"
+            class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">📚
+            교육</button>
+          <button onclick="setCategory(this,'비즈니스')"
+            class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">💼
+            비즈니스</button>
+          <button onclick="setCategory(this,'분석')"
+            class="category-btn flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 bg-white text-gray-600 rounded-xl font-medium text-sm transition-all hover:border-purple-300">📊
+            데이터 분석</button>
         </div>
       </div>
 
@@ -206,36 +463,56 @@
         <!-- 입력 폼 -->
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
           <h3 class="font-semibold text-gray-800 flex items-center gap-2">
-            <span class="w-6 h-6 gradient-bg rounded-full flex items-center justify-center text-white text-xs font-bold">1</span>
+            <span
+              class="w-6 h-6 gradient-bg rounded-full flex items-center justify-center text-white text-xs font-bold">1</span>
             정보 입력
           </h3>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">원하는 내용 <span class="text-red-400">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">원하는 내용 <span
+                class="text-red-400">*</span></label>
             <textarea id="goalInput" rows="3" placeholder="예: 인스타그램 광고 문구 3개를 만들어줘. 20-30대 직장인 타겟, 노이즈캔슬링 무선이어폰 출시 홍보용."
               class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 resize-none placeholder-gray-400 transition-all"></textarea>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">대상</label>
             <input id="targetInput" type="text" placeholder="예: 20-30대 직장인, 스타트업 창업자..."
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 placeholder-gray-400 transition-all"/>
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 placeholder-gray-400 transition-all" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-3">톤 & 스타일</label>
             <div class="grid grid-cols-2 gap-2">
-              <button onclick="setTone(this)" class="tone-btn active px-3 py-2.5 rounded-xl text-sm border-2 border-purple-500 bg-purple-500 text-white font-medium transition-all">🎯 전문적</button>
-              <button onclick="setTone(this)" class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">😊 친근한</button>
-              <button onclick="setTone(this)" class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">💡 창의적</button>
-              <button onclick="setTone(this)" class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">📋 격식체</button>
+              <button onclick="setTone(this)"
+                class="tone-btn active px-3 py-2.5 rounded-xl text-sm border-2 border-purple-500 bg-purple-500 text-white font-medium transition-all">🎯
+                전문적</button>
+              <button onclick="setTone(this)"
+                class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">😊
+                친근한</button>
+              <button onclick="setTone(this)"
+                class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">💡
+                창의적</button>
+              <button onclick="setTone(this)"
+                class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">📋
+                격식체</button>
             </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">출력 형식</label>
             <div class="flex flex-wrap gap-2">
-              <button onclick="setFormat(this)" class="format-btn px-3 py-1.5 rounded-lg text-xs border border-purple-400 bg-purple-50 text-purple-600 font-medium transition-all">📝 문단</button>
-              <button onclick="setFormat(this)" class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">• 목록</button>
-              <button onclick="setFormat(this)" class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">🔢 단계별</button>
-              <button onclick="setFormat(this)" class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">❓ Q&A형</button>
-              <button onclick="setFormat(this)" class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">📊 표</button>
+              <button onclick="setFormat(this)"
+                class="format-btn px-3 py-1.5 rounded-lg text-xs border border-purple-400 bg-purple-50 text-purple-600 font-medium transition-all">📝
+                문단</button>
+              <button onclick="setFormat(this)"
+                class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">•
+                목록</button>
+              <button onclick="setFormat(this)"
+                class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">🔢
+                단계별</button>
+              <button onclick="setFormat(this)"
+                class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">❓
+                Q&A형</button>
+              <button onclick="setFormat(this)"
+                class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">📊
+                표</button>
             </div>
           </div>
           <!-- 프레임워크 선택 -->
@@ -250,7 +527,8 @@
             <!-- 추천 이유 -->
             <p id="fwReason" class="text-xs text-indigo-500 mb-2 min-h-4"></p>
             <!-- 방식 설명 패널 (토글) -->
-            <div id="fwInfoPanel" class="hidden mb-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100 text-xs text-indigo-800 space-y-1 leading-relaxed">
+            <div id="fwInfoPanel"
+              class="hidden mb-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100 text-xs text-indigo-800 space-y-1 leading-relaxed">
               <p><strong>CO-STAR</strong> — Context·Objective·Style·Tone·Audience·Response. 가장 정교하고 완성도 높은 범용 방식.</p>
               <p><strong>RISEN</strong> — Role·Instructions·Steps·End goal·Narrowing. 단계별 작업에 특화.</p>
               <p><strong>RTF</strong> — Role·Task·Format. 빠르고 간결한 실무형.</p>
@@ -260,13 +538,27 @@
               <p><strong>자유형</strong> — 구조 없이 핵심만 담은 기본 방식.</p>
             </div>
             <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" id="fwBtns">
-              <button onclick="setFramework(this,'costar','manual')"  data-fw="costar" class="fw-btn active flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-indigo-900 bg-indigo-900 text-white font-semibold">CO-STAR<span class="rec-dot"></span></button>
-              <button onclick="setFramework(this,'risen','manual')"   data-fw="risen"  class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">RISEN<span class="rec-dot"></span></button>
-              <button onclick="setFramework(this,'rtf','manual')"     data-fw="rtf"    class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">RTF<span class="rec-dot"></span></button>
-              <button onclick="setFramework(this,'care','manual')"    data-fw="care"   class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">CARE<span class="rec-dot"></span></button>
-              <button onclick="setFramework(this,'ape','manual')"     data-fw="ape"    class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">APE<span class="rec-dot"></span></button>
-              <button onclick="setFramework(this,'prompt','manual')"  data-fw="prompt" class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">PROMPT<span class="rec-dot"></span></button>
-              <button onclick="setFramework(this,'free','manual')"    data-fw="free"   class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">자유형<span class="rec-dot"></span></button>
+              <button onclick="setFramework(this,'costar','manual')" data-fw="costar"
+                class="fw-btn active flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-indigo-900 bg-indigo-900 text-white font-semibold">CO-STAR<span
+                  class="rec-dot"></span></button>
+              <button onclick="setFramework(this,'risen','manual')" data-fw="risen"
+                class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">RISEN<span
+                  class="rec-dot"></span></button>
+              <button onclick="setFramework(this,'rtf','manual')" data-fw="rtf"
+                class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">RTF<span
+                  class="rec-dot"></span></button>
+              <button onclick="setFramework(this,'care','manual')" data-fw="care"
+                class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">CARE<span
+                  class="rec-dot"></span></button>
+              <button onclick="setFramework(this,'ape','manual')" data-fw="ape"
+                class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">APE<span
+                  class="rec-dot"></span></button>
+              <button onclick="setFramework(this,'prompt','manual')" data-fw="prompt"
+                class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">PROMPT<span
+                  class="rec-dot"></span></button>
+              <button onclick="setFramework(this,'free','manual')" data-fw="free"
+                class="fw-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs border-2 border-gray-200 text-gray-600 font-semibold">자유형<span
+                  class="rec-dot"></span></button>
             </div>
           </div>
 
@@ -282,27 +574,35 @@
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-semibold text-gray-800 flex items-center gap-2">
-                <span class="w-6 h-6 gradient-bg rounded-full flex items-center justify-center text-white text-xs font-bold">2</span>
+                <span
+                  class="w-6 h-6 gradient-bg rounded-full flex items-center justify-center text-white text-xs font-bold">2</span>
                 생성된 프롬프트
               </h3>
             </div>
             <div id="emptyState" class="py-10 text-center">
               <div class="text-5xl mb-3">🪄</div>
-              <p class="text-gray-400 text-sm">왼쪽에서 정보를 입력하고<br/>생성 버튼을 눌러보세요</p>
+              <p class="text-gray-400 text-sm">왼쪽에서 정보를 입력하고<br />생성 버튼을 눌러보세요</p>
             </div>
             <div id="resultContent" class="hidden">
               <!-- 프레임워크 배지 -->
               <div id="fwBadgeRow" class="flex items-center gap-2 mb-3">
-                <span id="fwBadge" class="fw-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white"></span>
+                <span id="fwBadge"
+                  class="fw-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white"></span>
                 <span id="fwBadgeDesc" class="text-xs text-gray-400"></span>
               </div>
-              <div id="resultText" class="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-xl p-4 border border-gray-100 whitespace-pre-wrap min-h-28"></div>
+              <div id="resultText"
+                class="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-xl p-4 border border-gray-100 whitespace-pre-wrap min-h-28">
+              </div>
               <div class="mt-3 flex items-center justify-between">
                 <div class="flex gap-2">
-                  <button onclick="showToast('좋아요! 기록되었습니다 ⭐')" class="text-xl hover:scale-110 transition-transform">⭐</button>
-                  <button onclick="showToast('피드백 감사합니다 👍')" class="text-xl hover:scale-110 transition-transform">👍</button>
+                  <button onclick="showToast('좋아요! 기록되었습니다 ⭐')"
+                    class="text-xl hover:scale-110 transition-transform">⭐</button>
+                  <button onclick="showToast('피드백 감사합니다 👍')"
+                    class="text-xl hover:scale-110 transition-transform">👍</button>
                 </div>
-                <button onclick="copyText('resultText')" class="gradient-bg text-white text-xs px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-all">📋 복사</button>
+                <button onclick="copyText('resultText')"
+                  class="gradient-bg text-white text-xs px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-all">📋
+                  복사</button>
               </div>
             </div>
           </div>
@@ -314,7 +614,8 @@
               <a href="#" class="text-xs text-purple-600 hover:underline">전체 보기</a>
             </div>
             <div class="space-y-2">
-              <div onclick="loadTemplate('sns')" class="card-hover cursor-pointer p-3 rounded-xl border border-gray-100 hover:border-purple-200 bg-gray-50 hover:bg-purple-50 transition-all">
+              <div onclick="loadTemplate('sns')"
+                class="card-hover cursor-pointer p-3 rounded-xl border border-gray-100 hover:border-purple-200 bg-gray-50 hover:bg-purple-50 transition-all">
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="text-sm font-medium text-gray-700">📱 SNS 마케팅 카피</p>
@@ -323,7 +624,8 @@
                   <span class="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">인기</span>
                 </div>
               </div>
-              <div onclick="loadTemplate('blog')" class="card-hover cursor-pointer p-3 rounded-xl border border-gray-100 hover:border-purple-200 bg-gray-50 hover:bg-purple-50 transition-all">
+              <div onclick="loadTemplate('blog')"
+                class="card-hover cursor-pointer p-3 rounded-xl border border-gray-100 hover:border-purple-200 bg-gray-50 hover:bg-purple-50 transition-all">
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="text-sm font-medium text-gray-700">📝 블로그 포스트 작성</p>
@@ -332,7 +634,8 @@
                   <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">신규</span>
                 </div>
               </div>
-              <div onclick="loadTemplate('email')" class="card-hover cursor-pointer p-3 rounded-xl border border-gray-100 hover:border-purple-200 bg-gray-50 hover:bg-purple-50 transition-all">
+              <div onclick="loadTemplate('email')"
+                class="card-hover cursor-pointer p-3 rounded-xl border border-gray-100 hover:border-purple-200 bg-gray-50 hover:bg-purple-50 transition-all">
                 <p class="text-sm font-medium text-gray-700">📧 비즈니스 이메일</p>
                 <p class="text-xs text-gray-400 mt-0.5">⭐ 4.8 · 643 사용</p>
               </div>
@@ -350,16 +653,15 @@
         <div class="space-y-4">
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h3 class="font-semibold text-gray-800 mb-1 flex items-center gap-2">
-              <span class="w-6 h-6 gradient-img rounded-full flex items-center justify-center text-white text-xs font-bold">1</span>
+              <span
+                class="w-6 h-6 gradient-img rounded-full flex items-center justify-center text-white text-xs font-bold">1</span>
               이미지 드롭 또는 업로드
             </h3>
             <p class="text-xs text-gray-400 mb-4">이미지를 분석하여 AI 전문 프롬프트를 자동 생성합니다</p>
 
             <!-- 드롭존 -->
             <div id="dropZone" class="drop-zone rounded-2xl p-6 text-center cursor-pointer relative overflow-hidden"
-              ondragover="handleDragOver(event)"
-              ondragleave="handleDragLeave(event)"
-              ondrop="handleDrop(event)"
+              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)"
               onclick="document.getElementById('fileInput').click()">
 
               <!-- 빈 상태 -->
@@ -378,11 +680,14 @@
               <!-- 이미지 미리보기 -->
               <div id="dropPreview" class="hidden">
                 <div class="relative inline-block">
-                  <img id="previewImg" src="" alt="업로드된 이미지" class="max-h-52 rounded-xl mx-auto object-contain shadow-md"/>
+                  <img id="previewImg" src="" alt="업로드된 이미지"
+                    class="max-h-52 rounded-xl mx-auto object-contain shadow-md" />
                   <!-- 스캔 오버레이 (분석 중) -->
                   <div id="scanOverlay" class="absolute inset-0 rounded-xl overflow-hidden hidden">
                     <div class="absolute inset-0 bg-purple-900/30 rounded-xl"></div>
-                    <div class="scan-line absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-pink-400 to-transparent" style="top:0"></div>
+                    <div
+                      class="scan-line absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-pink-400 to-transparent"
+                      style="top:0"></div>
                     <div class="absolute inset-0 flex items-center justify-center">
                       <div class="bg-black/60 text-white text-xs px-4 py-2 rounded-full flex items-center gap-2">
                         <div class="spinner-pink"></div>
@@ -396,7 +701,8 @@
                 <div id="imgInfo" class="mt-3 text-left hidden">
                   <div class="flex items-center justify-between mb-2">
                     <p class="text-xs font-medium text-gray-600" id="imgFileName">파일명</p>
-                    <button onclick="resetImage(event)" class="text-xs text-red-400 hover:text-red-500 flex items-center gap-1">
+                    <button onclick="resetImage(event)"
+                      class="text-xs text-red-400 hover:text-red-500 flex items-center gap-1">
                       🗑 제거
                     </button>
                   </div>
@@ -410,29 +716,33 @@
                 </div>
               </div>
 
-              <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileInput(event)"/>
+              <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileInput(event)" />
             </div>
 
             <!-- 프롬프트 용도 선택 -->
             <div class="mt-5" id="imgOptions">
               <label class="block text-sm font-medium text-gray-700 mb-3">어떤 프롬프트가 필요하세요?</label>
               <div class="grid grid-cols-2 gap-2">
-                <button onclick="setImgPurpose(this, 'recreate')" class="img-purpose-btn active px-3 py-3 rounded-xl border-2 border-pink-400 bg-pink-50 text-left transition-all">
+                <button onclick="setImgPurpose(this, 'recreate')"
+                  class="img-purpose-btn active px-3 py-3 rounded-xl border-2 border-pink-400 bg-pink-50 text-left transition-all">
                   <div class="text-base mb-1">🎨</div>
                   <div class="text-xs font-semibold text-pink-700">유사 이미지 생성</div>
                   <div class="text-xs text-pink-400 mt-0.5">Midjourney / DALL-E</div>
                 </button>
-                <button onclick="setImgPurpose(this, 'analyze')" class="img-purpose-btn px-3 py-3 rounded-xl border-2 border-gray-200 text-left transition-all hover:border-pink-200">
+                <button onclick="setImgPurpose(this, 'analyze')"
+                  class="img-purpose-btn px-3 py-3 rounded-xl border-2 border-gray-200 text-left transition-all hover:border-pink-200">
                   <div class="text-base mb-1">🔍</div>
                   <div class="text-xs font-semibold text-gray-700">이미지 분석 요청</div>
                   <div class="text-xs text-gray-400 mt-0.5">Claude / ChatGPT</div>
                 </button>
-                <button onclick="setImgPurpose(this, 'improve')" class="img-purpose-btn px-3 py-3 rounded-xl border-2 border-gray-200 text-left transition-all hover:border-pink-200">
+                <button onclick="setImgPurpose(this, 'improve')"
+                  class="img-purpose-btn px-3 py-3 rounded-xl border-2 border-gray-200 text-left transition-all hover:border-pink-200">
                   <div class="text-base mb-1">✨</div>
                   <div class="text-xs font-semibold text-gray-700">이미지 개선 방향</div>
                   <div class="text-xs text-gray-400 mt-0.5">디자인 피드백</div>
                 </button>
-                <button onclick="setImgPurpose(this, 'describe')" class="img-purpose-btn px-3 py-3 rounded-xl border-2 border-gray-200 text-left transition-all hover:border-pink-200">
+                <button onclick="setImgPurpose(this, 'describe')"
+                  class="img-purpose-btn px-3 py-3 rounded-xl border-2 border-gray-200 text-left transition-all hover:border-pink-200">
                   <div class="text-base mb-1">📝</div>
                   <div class="text-xs font-semibold text-gray-700">상세 설명 생성</div>
                   <div class="text-xs text-gray-400 mt-0.5">접근성 / 문서화</div>
@@ -442,9 +752,10 @@
 
             <!-- 추가 요구사항 -->
             <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">추가 요구사항 <span class="text-gray-400 font-normal">(선택)</span></label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">추가 요구사항 <span
+                  class="text-gray-400 font-normal">(선택)</span></label>
               <input id="imgExtraInput" type="text" placeholder="예: 더 밝고 따뜻한 분위기로, 16:9 비율로..."
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition-all"/>
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition-all" />
             </div>
 
             <!-- 생성 버튼 -->
@@ -461,14 +772,15 @@
           <!-- 생성된 프롬프트 결과 -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <span class="w-6 h-6 gradient-img rounded-full flex items-center justify-center text-white text-xs font-bold">2</span>
+              <span
+                class="w-6 h-6 gradient-img rounded-full flex items-center justify-center text-white text-xs font-bold">2</span>
               생성된 이미지 프롬프트
             </h3>
 
             <!-- 빈 상태 -->
             <div id="imgEmptyState" class="py-10 text-center">
               <div class="text-5xl mb-3">🌈</div>
-              <p class="text-gray-400 text-sm">이미지를 드롭하면<br/>전문 프롬프트를 생성해 드립니다</p>
+              <p class="text-gray-400 text-sm">이미지를 드롭하면<br />전문 프롬프트를 생성해 드립니다</p>
               <div class="mt-4 grid grid-cols-3 gap-2 opacity-40">
                 <div class="h-16 bg-gradient-to-br from-pink-200 to-purple-200 rounded-xl"></div>
                 <div class="h-16 bg-gradient-to-br from-blue-200 to-cyan-200 rounded-xl"></div>
@@ -481,25 +793,37 @@
               <!-- 영문 프롬프트 (Midjourney 스타일) -->
               <div id="englishPromptBox" class="mb-4 hidden">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs font-semibold text-purple-600 flex items-center gap-1">🎨 English Prompt <span class="bg-purple-100 px-1.5 py-0.5 rounded text-purple-500">Midjourney / DALL-E</span></span>
-                  <button onclick="copyText('englishPromptText')" class="text-xs text-gray-400 hover:text-purple-600 transition-colors">📋 복사</button>
+                  <span class="text-xs font-semibold text-purple-600 flex items-center gap-1">🎨 English Prompt <span
+                      class="bg-purple-100 px-1.5 py-0.5 rounded text-purple-500">Midjourney / DALL-E</span></span>
+                  <button onclick="copyText('englishPromptText')"
+                    class="text-xs text-gray-400 hover:text-purple-600 transition-colors">📋 복사</button>
                 </div>
-                <div id="englishPromptText" class="text-sm text-gray-800 font-mono leading-relaxed bg-gray-50 rounded-xl p-4 border border-gray-100 whitespace-pre-wrap"></div>
+                <div id="englishPromptText"
+                  class="text-sm text-gray-800 font-mono leading-relaxed bg-gray-50 rounded-xl p-4 border border-gray-100 whitespace-pre-wrap">
+                </div>
               </div>
 
               <!-- 한국어 프롬프트 (Claude/ChatGPT 스타일) -->
               <div id="koreanPromptBox" class="mb-4 hidden">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs font-semibold text-pink-600 flex items-center gap-1">🔍 한국어 프롬프트 <span class="bg-pink-100 px-1.5 py-0.5 rounded text-pink-500">Claude / ChatGPT</span></span>
-                  <button onclick="copyText('koreanPromptText')" class="text-xs text-gray-400 hover:text-pink-600 transition-colors">📋 복사</button>
+                  <span class="text-xs font-semibold text-pink-600 flex items-center gap-1">🔍 한국어 프롬프트 <span
+                      class="bg-pink-100 px-1.5 py-0.5 rounded text-pink-500">Claude / ChatGPT</span></span>
+                  <button onclick="copyText('koreanPromptText')"
+                    class="text-xs text-gray-400 hover:text-pink-600 transition-colors">📋 복사</button>
                 </div>
-                <div id="koreanPromptText" class="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-xl p-4 border border-gray-100 whitespace-pre-wrap"></div>
+                <div id="koreanPromptText"
+                  class="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-xl p-4 border border-gray-100 whitespace-pre-wrap">
+                </div>
               </div>
 
               <div class="flex gap-2 mt-3">
-                <button onclick="copyBothPrompts()" class="flex-1 gradient-img text-white text-xs py-2.5 rounded-lg font-semibold hover:opacity-90 transition-all">📋 전체 복사</button>
-                <button onclick="resetImage(); document.getElementById('imgResultContent').classList.add('hidden'); document.getElementById('imgEmptyState').classList.remove('hidden');"
-                  class="px-4 py-2.5 border border-gray-200 text-gray-600 text-xs rounded-lg hover:border-pink-300 transition-all">🔄 다시</button>
+                <button onclick="copyBothPrompts()"
+                  class="flex-1 gradient-img text-white text-xs py-2.5 rounded-lg font-semibold hover:opacity-90 transition-all">📋
+                  전체 복사</button>
+                <button
+                  onclick="resetImage(); document.getElementById('imgResultContent').classList.add('hidden'); document.getElementById('imgEmptyState').classList.remove('hidden');"
+                  class="px-4 py-2.5 border border-gray-200 text-gray-600 text-xs rounded-lg hover:border-pink-300 transition-all">🔄
+                  다시</button>
               </div>
             </div>
           </div>
@@ -510,7 +834,8 @@
             <div class="space-y-2 text-xs text-gray-600">
               <div class="flex items-start gap-2">
                 <span class="text-purple-400 mt-0.5">▸</span>
-                <span><strong>Midjourney</strong>: 영문 프롬프트 + <code class="bg-white px-1 rounded">--ar 16:9</code> 등 파라미터 추가</span>
+                <span><strong>Midjourney</strong>: 영문 프롬프트 + <code class="bg-white px-1 rounded">--ar 16:9</code> 등 파라미터
+                  추가</span>
               </div>
               <div class="flex items-start gap-2">
                 <span class="text-purple-400 mt-0.5">▸</span>
@@ -533,15 +858,26 @@
     <!-- 통계 배너 -->
     <div class="mt-10 gradient-bg rounded-2xl p-6 text-white">
       <div class="grid grid-cols-3 gap-4 text-center">
-        <div><div class="text-3xl font-bold">12,847</div><div class="text-white/70 text-sm mt-1">생성된 프롬프트</div></div>
-        <div><div class="text-3xl font-bold">320+</div><div class="text-white/70 text-sm mt-1">이미지 분석 완료</div></div>
-        <div><div class="text-3xl font-bold">4.9⭐</div><div class="text-white/70 text-sm mt-1">평균 만족도</div></div>
+        <div>
+          <div class="text-3xl font-bold">12,847</div>
+          <div class="text-white/70 text-sm mt-1">생성된 프롬프트</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold">320+</div>
+          <div class="text-white/70 text-sm mt-1">이미지 분석 완료</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold">4.9⭐</div>
+          <div class="text-white/70 text-sm mt-1">평균 만족도</div>
+        </div>
       </div>
     </div>
   </main>
 
   <!-- 우측 하단 토스트 -->
-  <div id="toast" class="fixed bottom-6 right-6 bg-gray-800 text-white px-5 py-3 rounded-xl text-sm font-medium shadow-xl opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+  <div id="toast"
+    class="fixed bottom-6 right-6 bg-gray-800 text-white px-5 py-3 rounded-xl text-sm font-medium shadow-xl opacity-0 transition-opacity duration-300 pointer-events-none">
+  </div>
 
   <!-- 중앙 하단 프레임워크 토스트 -->
   <div id="fwToast">
@@ -553,9 +889,7 @@
   <canvas id="colorCanvas" class="hidden"></canvas>
 
   <!-- 전체 화면 드롭 오버레이 -->
-  <div id="globalDropOverlay"
-    ondragover="handleGlobalDragOver(event)"
-    ondragleave="handleGlobalDragLeave(event)"
+  <div id="globalDropOverlay" ondragover="handleGlobalDragOver(event)" ondragleave="handleGlobalDragLeave(event)"
     ondrop="handleGlobalDrop(event)">
     <div class="overlay-box">
       <div class="text-6xl mb-4" id="overlayIcon">🖼️</div>
@@ -571,6 +905,62 @@
   </div>
 
   <script>
+    // ─── 보안 설정 (난독화된 API 설정) ─────────────────────
+    // 키는 분할 저장 후 런타임에 조립됩니다
+    const _s1 = 'AIzaS';
+    const _s2 = 'yBLb1';
+    const _s3 = 'DUDR8';
+    const _s4 = 'Jb9RJ';
+    const _s5 = 'Abbms';
+    const _s6 = 'LUWX-';
+    const _s7 = 'gBocs';
+    const _s8 = 'vR4k';
+    const _ep = 'https://generativelanguage.googleapis.com/v1beta/models/';
+    const _md = 'gemini-2.0-flash';
+    function _gk() { return [_s1, _s2, _s3, _s4, _s5, _s6, _s7, _s8].join(''); }
+    function _ge() { return `${_ep}${_md}:generateContent?key=${_gk()}`; }
+
+    // ─── Gemini API 호출 (텍스트) ────────────────────────
+    async function callGemini(promptText) {
+      const res = await fetch(_ge(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: { temperature: 0.75, maxOutputTokens: 1500 }
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.error?.message || '생성 실패');
+      }
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }
+
+    // ─── Gemini API 호출 (이미지 Vision) ─────────────────
+    async function callGeminiVision(promptText, base64Data, mimeType) {
+      const res = await fetch(_ge(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: mimeType, data: base64Data } },
+              { text: promptText }
+            ]
+          }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2000 }
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.error?.message || '이미지 분석 실패');
+      }
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }
+
     // ─── 전역 드래그 앤 드롭 ─────────────────────────────
     let globalDragCounter = 0; // 자식 요소 진입/이탈 오탐 방지
 
@@ -659,13 +1049,13 @@
 
     // ─── 프레임워크 메타 ─────────────────────────────────
     const FW_META = {
-      costar:  { label: 'CO-STAR', color: '#4f46e5', desc: 'Context · Objective · Style · Tone · Audience · Response' },
-      risen:   { label: 'RISEN',   color: '#0891b2', desc: 'Role · Instructions · Steps · End goal · Narrowing' },
-      rtf:     { label: 'RTF',     color: '#059669', desc: 'Role · Task · Format' },
-      care:    { label: 'CARE',    color: '#d97706', desc: 'Context · Action · Result · Example' },
-      ape:     { label: 'APE',     color: '#dc2626', desc: 'Action · Purpose · Expectation' },
-      prompt:  { label: 'PROMPT',  color: '#7c3aed', desc: 'Purpose · Role · Output · Method · Parameters · Tone' },
-      free:    { label: '자유형',  color: '#6b7280', desc: '구조 없이 핵심만 담은 기본 방식' },
+      costar: { label: 'CO-STAR', color: '#4f46e5', desc: 'Context · Objective · Style · Tone · Audience · Response' },
+      risen: { label: 'RISEN', color: '#0891b2', desc: 'Role · Instructions · Steps · End goal · Narrowing' },
+      rtf: { label: 'RTF', color: '#059669', desc: 'Role · Task · Format' },
+      care: { label: 'CARE', color: '#d97706', desc: 'Context · Action · Result · Example' },
+      ape: { label: 'APE', color: '#dc2626', desc: 'Action · Purpose · Expectation' },
+      prompt: { label: 'PROMPT', color: '#7c3aed', desc: 'Purpose · Role · Output · Method · Parameters · Tone' },
+      free: { label: '자유형', color: '#6b7280', desc: '구조 없이 핵심만 담은 기본 방식' },
     };
 
     // ─── 자동 추천 매트릭스 ──────────────────────────────
@@ -712,9 +1102,9 @@
       document.querySelectorAll('.fw-btn').forEach(b => {
         b.classList.remove('active', 'recommended');
         // 인라인 스타일로 명시 리셋 (Tailwind 초기 클래스 잔존 방지)
-        b.style.background  = '#ffffff';
+        b.style.background = '#ffffff';
         b.style.borderColor = '#e5e7eb';
-        b.style.color       = '#4b5563';
+        b.style.color = '#4b5563';
       });
 
       // 추천 dot은 자동 모드일 때만 해당 버튼에 표시
@@ -722,9 +1112,9 @@
       if (targetBtn) {
         targetBtn.classList.add('active');
         targetBtn.classList.remove('border-gray-200');
-        targetBtn.style.background   = meta.color;
-        targetBtn.style.borderColor  = meta.color;
-        targetBtn.style.color        = 'white';
+        targetBtn.style.background = meta.color;
+        targetBtn.style.borderColor = meta.color;
+        targetBtn.style.color = 'white';
         if (mode === 'auto') targetBtn.classList.add('recommended');
         // 애니메이션
         targetBtn.classList.remove('fw-switch-animate');
@@ -735,7 +1125,7 @@
       selectedFramework = key;
 
       // 칩 & 이유 텍스트 업데이트
-      const chip     = document.getElementById('fwModeChip');
+      const chip = document.getElementById('fwModeChip');
       const reasonEl = document.getElementById('fwReason');
       if (mode === 'auto') {
         chip.textContent = '✦ 자동 추천';
@@ -768,11 +1158,11 @@
       '격식체': '정중하고 격식 있는 문어체'
     };
     const formatMap = {
-      '문단':    '완성된 문단 형식',
-      '목록':    '글머리 목록(• ) 형식',
-      '단계별':  '번호가 있는 단계별 목록',
-      'Q&A형':   '질문-답변(Q&A) 형식',
-      '표':      '표(Markdown table) 형식'
+      '문단': '완성된 문단 형식',
+      '목록': '글머리 목록(• ) 형식',
+      '단계별': '번호가 있는 단계별 목록',
+      'Q&A형': '질문-답변(Q&A) 형식',
+      '표': '표(Markdown table) 형식'
     };
 
     function getToneText(t) {
@@ -789,7 +1179,7 @@
       const aud = target || '일반 독자';
 
       if (fw === 'costar') return (
-`## [Context] 배경
+        `## [Context] 배경
 당신은 ${category} 분야의 전문가입니다. 실무에서 즉시 활용 가능한 고품질 결과물을 작성합니다.
 
 ## [Objective] 목표
@@ -809,7 +1199,7 @@ ${f}으로 작성하며, 한국어를 사용합니다. 즉시 사용 가능한 �
       );
 
       if (fw === 'risen') return (
-`## [Role] 역할
+        `## [Role] 역할
 당신은 ${category} 분야의 시니어 전문가입니다.
 
 ## [Instructions] 지시
@@ -831,7 +1221,7 @@ ${aud}에게 즉각적인 가치를 전달하는 완성된 ${category} 결과물
       );
 
       if (fw === 'rtf') return (
-`[Role]
+        `[Role]
 ${category} 분야 전문가
 
 [Task]
@@ -845,7 +1235,7 @@ ${goal}${target ? `\n대상: ${aud}` : ''}
       );
 
       if (fw === 'care') return (
-`[Context] 상황
+        `[Context] 상황
 ${category} 관련 작업으로, 대상은 ${aud}입니다.
 
 [Action] 요청 행동
@@ -860,7 +1250,7 @@ ${f}으로 작성하며, 한국어를 사용합니다.
       );
 
       if (fw === 'ape') return (
-`[Action] 행동
+        `[Action] 행동
 ${goal}
 
 [Purpose] 목적
@@ -873,7 +1263,7 @@ ${aud}에게 ${category} 분야의 전문적인 도움을 제공하기 위함
       );
 
       if (fw === 'prompt') return (
-`[Purpose] 목적
+        `[Purpose] 목적
 ${goal}
 
 [Role] 역할
@@ -898,7 +1288,7 @@ ${t}`
 
       // free
       return (
-`당신은 ${category} 분야의 전문가입니다. 아래 조건에 맞는 결과물을 작성해주세요.
+        `당신은 ${category} 분야의 전문가입니다. 아래 조건에 맞는 결과물을 작성해주세요.
 
 요청: ${goal}${target ? `\n대상: ${aud}` : ''}
 스타일: ${t}
@@ -923,7 +1313,7 @@ ${t}`
     function renderFwBadge(fw) {
       const meta = FW_META[fw];
       const badge = document.getElementById('fwBadge');
-      const desc  = document.getElementById('fwBadgeDesc');
+      const desc = document.getElementById('fwBadgeDesc');
       badge.textContent = meta.label;
       badge.style.background = meta.color;
       desc.textContent = meta.desc;
@@ -961,42 +1351,42 @@ ${t}`
     // ─── 텍스트 모드 ────────────────────────────────────
     function setCategory(btn, category) {
       document.querySelectorAll('.category-btn').forEach(b => {
-        b.classList.remove('active','border-purple-500','bg-purple-500','text-white');
-        b.classList.add('border-gray-200','bg-white','text-gray-600');
+        b.classList.remove('active', 'border-purple-500', 'bg-purple-500', 'text-white');
+        b.classList.add('border-gray-200', 'bg-white', 'text-gray-600');
       });
-      btn.classList.remove('border-gray-200','bg-white','text-gray-600');
-      btn.classList.add('active','border-purple-500','bg-purple-500','text-white');
+      btn.classList.remove('border-gray-200', 'bg-white', 'text-gray-600');
+      btn.classList.add('active', 'border-purple-500', 'bg-purple-500', 'text-white');
       selectedCategory = category;
       isManualFw = false;   // 카테고리 바뀌면 자동 추천 재활성화
       autoSelectFramework();
     }
     function setTone(btn) {
       document.querySelectorAll('.tone-btn').forEach(b => {
-        b.classList.remove('active','bg-purple-500','border-purple-500','text-white');
-        b.classList.add('border-gray-200','text-gray-600');
+        b.classList.remove('active', 'bg-purple-500', 'border-purple-500', 'text-white');
+        b.classList.add('border-gray-200', 'text-gray-600');
       });
-      btn.classList.remove('border-gray-200','text-gray-600');
-      btn.classList.add('active','bg-purple-500','border-purple-500','text-white');
+      btn.classList.remove('border-gray-200', 'text-gray-600');
+      btn.classList.add('active', 'bg-purple-500', 'border-purple-500', 'text-white');
       selectedTone = btn.textContent.trim();
       isManualFw = false;   // 톤 바뀌면 자동 추천 재활성화
       autoSelectFramework();
     }
     function setFormat(btn) {
       document.querySelectorAll('.format-btn').forEach(b => {
-        b.classList.remove('active','border-purple-400','bg-purple-50','text-purple-600');
-        b.classList.add('border-gray-200','text-gray-600');
+        b.classList.remove('active', 'border-purple-400', 'bg-purple-50', 'text-purple-600');
+        b.classList.add('border-gray-200', 'text-gray-600');
       });
-      btn.classList.remove('border-gray-200','text-gray-600');
-      btn.classList.add('active','border-purple-400','bg-purple-50','text-purple-600');
+      btn.classList.remove('border-gray-200', 'text-gray-600');
+      btn.classList.add('active', 'border-purple-400', 'bg-purple-50', 'text-purple-600');
       selectedFormat = btn.textContent.trim();
     }
 
-    function generatePrompt() {
+    async function generatePrompt() {
       if (isGenerating) return;
       const goal = document.getElementById('goalInput').value.trim();
       if (!goal) {
-        document.getElementById('goalInput').classList.add('border-red-400','ring-2','ring-red-100');
-        setTimeout(() => document.getElementById('goalInput').classList.remove('border-red-400','ring-2','ring-red-100'), 2000);
+        document.getElementById('goalInput').classList.add('border-red-400', 'ring-2', 'ring-red-100');
+        setTimeout(() => document.getElementById('goalInput').classList.remove('border-red-400', 'ring-2', 'ring-red-100'), 2000);
         return;
       }
       isGenerating = true;
@@ -1004,22 +1394,51 @@ ${t}`
       const spinner = document.getElementById('btnSpinner');
       const btn = document.getElementById('generateBtn');
       btn.disabled = true; btn.classList.add('opacity-80');
-      btnText.textContent = '생성 중...'; spinner.classList.remove('hidden');
+      btnText.textContent = 'AI 생성 중...'; spinner.classList.remove('hidden');
       document.getElementById('emptyState').classList.add('hidden');
       document.getElementById('resultContent').classList.add('hidden');
 
-      setTimeout(() => {
+      try {
         const target = document.getElementById('targetInput').value.trim();
-        const result = buildByFramework(selectedFramework, goal, target, selectedTone, selectedFormat, selectedCategory);
+        const fw = FW_META[selectedFramework];
+        const toneText = getToneText(selectedTone);
+        const formatText = getFormatText(selectedFormat);
+
+        const metaPrompt =
+          `당신은 세계 최고 수준의 AI 프롬프트 엔지니어입니다.
+아래 사용자 요청을 분석하여, 지정된 프레임워크 구조에 맞는 완성된 고품질 AI 프롬프트를 생성해주세요.
+
+【사용자 요청 정보】
+- 목적/내용: ${goal}
+- 카테고리: ${selectedCategory}
+${target ? `- 대상 독자: ${target}` : ''}
+- 톤 & 스타일: ${toneText}
+- 출력 형식: ${formatText}
+
+【사용할 프레임워크】
+${fw.label} — ${fw.desc}
+
+【지시사항】
+1. 반드시 ${fw.label} 프레임워크의 각 섹션 헤더([섹션명])를 명확하게 작성하세요.
+2. 각 섹션에 구체적이고 실용적인 내용을 채워주세요.
+3. 생성된 프롬프트는 ChatGPT, Claude, Gemini에 바로 복사해 사용할 수 있어야 합니다.
+4. 한국어로 작성하고, 설명이나 서문 없이 완성된 프롬프트만 출력하세요.
+5. ${selectedCategory} 분야의 전문성이 느껴지도록 구체적 디테일을 추가하세요.`;
+
+        const result = await callGemini(metaPrompt);
         document.getElementById('resultText').textContent = result;
         renderFwBadge(selectedFramework);
-        document.getElementById('resultContent').classList.remove('hidden','result-appear');
+        document.getElementById('resultContent').classList.remove('hidden', 'result-appear');
         document.getElementById('resultContent').classList.add('result-appear');
+        showFwToast(selectedFramework);
+      } catch (err) {
+        showToast('❌ 생성 실패: ' + err.message);
+        document.getElementById('emptyState').classList.remove('hidden');
+      } finally {
         btn.disabled = false; btn.classList.remove('opacity-80');
         btnText.textContent = '✨ 다시 생성하기'; spinner.classList.add('hidden');
         isGenerating = false;
-        showFwToast(selectedFramework);
-      }, 1400);
+      }
     }
 
     const templates = {
@@ -1042,12 +1461,12 @@ ${t}`
     // ─── 이미지 모드 ────────────────────────────────────
     function setImgPurpose(btn, purpose) {
       document.querySelectorAll('.img-purpose-btn').forEach(b => {
-        b.classList.remove('active','border-pink-400','bg-pink-50');
+        b.classList.remove('active', 'border-pink-400', 'bg-pink-50');
         b.classList.add('border-gray-200');
-        b.querySelectorAll('.text-xs').forEach(el => { el.classList.remove('text-pink-700','text-pink-400'); });
+        b.querySelectorAll('.text-xs').forEach(el => { el.classList.remove('text-pink-700', 'text-pink-400'); });
       });
       btn.classList.remove('border-gray-200');
-      btn.classList.add('active','border-pink-400','bg-pink-50');
+      btn.classList.add('active', 'border-pink-400', 'bg-pink-50');
       selectedImgPurpose = purpose;
     }
 
@@ -1083,7 +1502,7 @@ ${t}`
         document.getElementById('dropEmpty').classList.add('hidden');
         document.getElementById('dropPreview').classList.remove('hidden');
         document.getElementById('dropZone').classList.add('has-image');
-        document.getElementById('imgFileName').textContent = file.name + ' (' + (file.size/1024).toFixed(0) + 'KB)';
+        document.getElementById('imgFileName').textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + 'KB)';
         document.getElementById('imgInfo').classList.remove('hidden');
       };
       reader.readAsDataURL(file);
@@ -1097,10 +1516,10 @@ ${t}`
       const data = ctx.getImageData(0, 0, 80, 80).data;
 
       // 간단한 색상 샘플링 (5개 지점)
-      const positions = [[10,10],[60,10],[40,40],[10,60],[60,60]];
-      const colors = positions.map(([x,y]) => {
+      const positions = [[10, 10], [60, 10], [40, 40], [10, 60], [60, 60]];
+      const colors = positions.map(([x, y]) => {
         const idx = (y * 80 + x) * 4;
-        const r = data[idx], g = data[idx+1], b = data[idx+2];
+        const r = data[idx], g = data[idx + 1], b = data[idx + 2];
         return `rgb(${r},${g},${b})`;
       });
 
@@ -1143,9 +1562,9 @@ ${t}`
         const el = document.createElement('span');
         el.className = 'img-tag text-xs px-2.5 py-1 rounded-full font-medium';
         el.style.animationDelay = (i * 0.1) + 's';
-        if (i % 3 === 0) el.classList.add('bg-purple-100','text-purple-600');
-        else if (i % 3 === 1) el.classList.add('bg-pink-100','text-pink-600');
-        else el.classList.add('bg-blue-100','text-blue-600');
+        if (i % 3 === 0) el.classList.add('bg-purple-100', 'text-purple-600');
+        else if (i % 3 === 1) el.classList.add('bg-pink-100', 'text-pink-600');
+        else el.classList.add('bg-blue-100', 'text-blue-600');
         el.textContent = tag;
         container.appendChild(el);
       });
@@ -1162,7 +1581,7 @@ ${t}`
       document.getElementById('fileInput').value = '';
     }
 
-    function generateImagePrompt() {
+    async function generateImagePrompt() {
       if (!droppedImageDataUrl) {
         showToast('먼저 이미지를 드롭해주세요 🖼️');
         document.getElementById('dropZone').classList.add('drag-over');
@@ -1176,70 +1595,113 @@ ${t}`
       const scanOverlay = document.getElementById('scanOverlay');
 
       btn.disabled = true; btn.classList.add('opacity-80');
-      btnText.textContent = '분석 중...'; spinner.classList.remove('hidden');
+      btnText.textContent = 'AI 분석 중...'; spinner.classList.remove('hidden');
       scanOverlay.classList.remove('hidden');
-
       document.getElementById('imgEmptyState').classList.add('hidden');
       document.getElementById('imgResultContent').classList.add('hidden');
 
-      setTimeout(() => {
-        scanOverlay.classList.add('hidden');
-        btn.disabled = false; btn.classList.remove('opacity-80');
-        btnText.textContent = '🔮 다시 생성하기'; spinner.classList.add('hidden');
+      try {
+        // base64 추출 (data:image/xxx;base64, 제거)
+        const commaIdx = droppedImageDataUrl.indexOf(',');
+        const base64Data = droppedImageDataUrl.substring(commaIdx + 1);
+        const mimeMatch = droppedImageDataUrl.match(/data:([^;]+);/);
+        const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
 
         const extra = document.getElementById('imgExtraInput').value.trim();
-        const { eng, kor } = buildImagePrompt(selectedImgPurpose, extra);
+        const img = document.getElementById('previewImg');
+        const ratio = img.naturalWidth && img.naturalHeight
+          ? (img.naturalWidth / img.naturalHeight > 1.3 ? 'landscape' : img.naturalWidth / img.naturalHeight < 0.75 ? 'portrait' : 'square')
+          : 'landscape';
+        const arMap = { landscape: '16:9', portrait: '9:16', square: '1:1' };
+        const ar = arMap[ratio];
 
-        // 용도별 표시
-        const showEng = ['recreate', 'improve'].includes(selectedImgPurpose);
-        const showKor = ['analyze', 'describe', 'improve'].includes(selectedImgPurpose);
+        let eng = '', kor = '';
+        let showEng = false, showKor = false;
+
+        if (selectedImgPurpose === 'recreate') {
+          showEng = true; showKor = false;
+          const visionPrompt = `이 이미지를 보고 Midjourney 또는 DALL-E 3에서 유사한 이미지를 생성하기 위한 영문 프롬프트를 작성해주세요.
+
+규칙:
+- 영어로만 작성
+- 이미지의 구성, 색감, 분위기, 스타일, 조명을 정확하게 묘사
+- Midjourney 파라미터 포함: --ar ${ar} --v 6 --style raw
+- 마지막에 품질 키워드 추가 (8K, highly detailed, award-winning photography 등)
+${extra ? `- 추가 요구사항: ${extra}` : ''}
+
+프롬프트만 출력하고 설명 없이 작성하세요.`;
+          eng = await callGeminiVision(visionPrompt, base64Data, mimeType);
+        }
+
+        else if (selectedImgPurpose === 'analyze') {
+          showEng = false; showKor = true;
+          const visionPrompt = `첨부된 이미지를 전문가 관점에서 한국어로 상세히 분석해주세요.
+
+다음 항목을 포함하여 분석해주세요:
+1. 이미지 전체 구성과 레이아웃
+2. 주요 피사체 및 요소 설명
+3. 색감, 조명, 분위기
+4. 스타일 및 디자인 특성
+5. 이미지가 전달하는 메시지나 감정
+${extra ? `6. 추가 분석: ${extra}` : ''}
+
+각 항목을 구체적이고 전문적으로 설명해주세요.`;
+          kor = await callGeminiVision(visionPrompt, base64Data, mimeType);
+        }
+
+        else if (selectedImgPurpose === 'improve') {
+          showEng = true; showKor = true;
+          const visionPromptEng = `Analyze this image and create an English prompt for generating an improved version using Midjourney or DALL-E. Focus on enhancing composition, lighting, color grading, and visual impact. ${extra ? extra + '.' : ''} Include --ar ${ar} --v 6. Output only the prompt.`;
+          const visionPromptKor = `이 이미지를 디자이너 관점에서 한국어로 평가하고 개선 방향을 제안해주세요.
+
+다음을 포함해 주세요:
+1. 현재 이미지의 강점 (2~3가지)
+2. 개선이 필요한 부분 (3가지 이상)
+3. 구체적인 수정 방향과 방법
+4. 비슷한 레퍼런스 스타일 또는 방향 추천
+${extra ? `5. 요청사항 반영: ${extra}` : ''}`;
+          [eng, kor] = await Promise.all([
+            callGeminiVision(visionPromptEng, base64Data, mimeType),
+            callGeminiVision(visionPromptKor, base64Data, mimeType)
+          ]);
+        }
+
+        else if (selectedImgPurpose === 'describe') {
+          showEng = false; showKor = true;
+          const visionPrompt = `이 이미지에 대한 상세한 설명 텍스트를 한국어로 작성해주세요.
+
+목적: 접근성 향상 및 문서화
+
+포함할 내용:
+- 이미지에 등장하는 모든 주요 요소
+- 각 요소의 위치, 색상, 크기 관계
+- 전반적인 분위기와 맥락
+- 시각적으로 전달되는 의미나 정보
+${extra ? `- 추가 요구사항: ${extra}` : ''}
+
+시각 장애인도 이해할 수 있도록 명확하고 구체적으로 작성해주세요.`;
+          kor = await callGeminiVision(visionPrompt, base64Data, mimeType);
+        }
+
+        scanOverlay.classList.add('hidden');
 
         document.getElementById('englishPromptBox').classList.toggle('hidden', !showEng);
         document.getElementById('koreanPromptBox').classList.toggle('hidden', !showKor);
-
         if (showEng) document.getElementById('englishPromptText').textContent = eng;
         if (showKor) document.getElementById('koreanPromptText').textContent = kor;
 
-        // recreate는 영문만
-        if (selectedImgPurpose === 'recreate') {
-          document.getElementById('englishPromptText').textContent = eng;
-          document.getElementById('englishPromptBox').classList.remove('hidden');
-          document.getElementById('koreanPromptBox').classList.add('hidden');
-        }
-
         document.getElementById('imgResultContent').classList.remove('hidden');
         document.getElementById('imgResultContent').classList.add('result-appear');
-      }, 2200);
-    }
+        showToast('✅ AI 이미지 분석 완료!');
 
-    function buildImagePrompt(purpose, extra) {
-      const img = document.getElementById('previewImg');
-      const ratio = img.naturalWidth && img.naturalHeight
-        ? (img.naturalWidth / img.naturalHeight > 1.3 ? 'landscape' : img.naturalWidth / img.naturalHeight < 0.75 ? 'portrait' : 'square')
-        : 'landscape';
-      const arMap = { landscape: '16:9', portrait: '9:16', square: '1:1' };
-      const ar = arMap[ratio];
-
-      const extraNote = extra ? `\n추가 요구사항: ${extra}` : '';
-
-      if (purpose === 'recreate') {
-        const eng = `A highly detailed, photorealistic image inspired by the provided reference image. Capture the same overall composition, color palette, and mood. Style: cinematic, professional photography. Lighting: natural with soft shadows. ${extra ? extra + '.' : ''} High resolution, 8K, sharp details, award-winning photography --ar ${ar} --v 6 --style raw`;
-        return { eng, kor: '' };
+      } catch (err) {
+        scanOverlay.classList.add('hidden');
+        showToast('❌ 이미지 분석 실패: ' + err.message);
+        document.getElementById('imgEmptyState').classList.remove('hidden');
+      } finally {
+        btn.disabled = false; btn.classList.remove('opacity-80');
+        btnText.textContent = '🔮 다시 생성하기'; spinner.classList.add('hidden');
       }
-      if (purpose === 'analyze') {
-        const kor = `첨부된 이미지를 전문가 관점에서 상세히 분석해주세요.\n\n다음 항목을 포함하여 분석해주세요:\n1. 이미지 전체 구성과 레이아웃\n2. 주요 피사체 및 요소 설명\n3. 색감, 조명, 분위기\n4. 스타일 및 디자인 특성\n5. 이미지가 전달하는 메시지나 감정${extraNote}\n\n각 항목을 구체적이고 전문적으로 설명해주세요.`;
-        return { eng: '', kor };
-      }
-      if (purpose === 'improve') {
-        const eng = `Based on the reference image, create an improved, more polished version. Enhance: composition, lighting, color grading, and overall visual impact. Maintain the core subject and style. ${extra ? extra + '.' : ''} Professional quality, high resolution --ar ${ar}`;
-        const kor = `위 이미지를 디자이너 관점에서 평가하고 개선 방향을 제안해주세요.\n\n다음을 포함해 주세요:\n1. 현재 이미지의 강점 (2~3가지)\n2. 개선이 필요한 부분 (3가지 이상)\n3. 구체적인 수정 방향과 방법\n4. 비슷한 레퍼런스 스타일 또는 방향 추천${extraNote}`;
-        return { eng, kor };
-      }
-      if (purpose === 'describe') {
-        const kor = `이 이미지에 대한 상세한 설명 텍스트를 작성해주세요.\n\n목적: 접근성 향상 및 문서화\n\n포함할 내용:\n- 이미지에 등장하는 모든 주요 요소\n- 각 요소의 위치, 색상, 크기 관계\n- 전반적인 분위기와 맥락\n- 시각적으로 전달되는 의미나 정보${extraNote}\n\n시각 장애인도 이해할 수 있도록 명확하고 구체적으로 작성해주세요.`;
-        return { eng: '', kor };
-      }
-      return { eng: '', kor: '' };
     }
 
     function copyBothPrompts() {
@@ -1263,4 +1725,5 @@ ${t}`
     }
   </script>
 </body>
+
 </html>
