@@ -1131,7 +1131,7 @@
       const _s7 = 'gBocs';
       const _s8 = 'vR4k';
       const _ep = 'https://generativelanguage.googleapis.com/v1beta/models/';
-      const _md = 'gemini-2.0-flash';
+      const _md = 'gemini-1.5-flash';
       function _gk() { return [_s1, _s2, _s3, _s4, _s5, _s6, _s7, _s8].join(''); }
       function _ge() { return `${_ep}${_md}:generateContent?key=${_gk()}`; }
 
@@ -1820,7 +1820,14 @@ ${fw.label} — ${fw.desc}
           const commaIdx = droppedImageDataUrl.indexOf(',');
           const base64Data = droppedImageDataUrl.substring(commaIdx + 1);
           const mimeMatch = droppedImageDataUrl.match(/data:([^;]+);/);
-          const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+          // Gemini 지원 포맷: jpeg, png, gif, webp, heic, heif
+          // avif 등 미지원 포맷은 jpeg로 폴백
+          const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
+          const rawMime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+          const mimeType = SUPPORTED_TYPES.includes(rawMime) ? rawMime : 'image/jpeg';
+          if (rawMime !== mimeType) {
+            console.warn(`미지원 포맷(${rawMime})을 image/jpeg로 대체 전송합니다.`);
+          }
 
           const extra = document.getElementById('imgExtraInput').value.trim();
           const img = document.getElementById('previewImg');
