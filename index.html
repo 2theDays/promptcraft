@@ -2275,22 +2275,28 @@ ${extra ? `- 추가 요구사항: ${extra}` : ''}
 
     // JSON 파일로 내보내기 (File System API 미지원 환경용 백업)
     async function exportPrompts() {
-      const list = getSavedPrompts();
-      if (!list.length) { showToast('저장된 프롬프트가 없습니다'); return; }
+      try {
+        const list = getSavedPrompts();
+        if (!list.length) { showToast('저장된 프롬프트가 없습니다'); return; }
 
-      // 폴더가 지정된 경우 → 해당 폴더에 바로 저장
-      if (dirHandle) {
-        const ok = await writeToFile(list);
-        if (ok) {
-          showToast(`💾 저장 폴더에 ${FILE_NAME} 저장 완료!`);
-        } else {
-          showToast('⚠️ 폴더 저장 실패 — 다운로드로 대체합니다');
-          _downloadJson(list);
+        // 폴더가 지정된 경우 → 해당 폴더에 바로 저장
+        if (dirHandle) {
+          try {
+            const ok = await writeToFile(list);
+            if (ok) {
+              showToast(`💾 저장 폴더에 ${FILE_NAME} 저장 완료!`);
+              return;
+            }
+          } catch (e) {
+            console.warn('폴더 저장 실패, 다운로드로 대체:', e);
+          }
         }
-      } else {
-        // 폴더 미지정 → 브라우저 다운로드 다이얼로그
+        // 폴더 미지정 또는 폴더 저장 실패 → 브라우저 다운로드
         _downloadJson(list);
-        showToast('📤 JSON 파일로 내보냈습니다!');
+        showToast('📤 JSON 파일로 다운로드했습니다!');
+      } catch (e) {
+        console.error('exportPrompts 오류:', e);
+        showToast('⚠️ 내보내기에 실패했습니다: ' + e.message);
       }
     }
 
