@@ -593,28 +593,21 @@
               <button onclick="setTone(this)"
                 class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">📋
                 격식체</button>
+              <button onclick="setTone(this)"
+                class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">🔥
+                설득력</button>
+              <button onclick="setTone(this)"
+                class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">😄
+                유머러스</button>
+              <button onclick="setTone(this)"
+                class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">💜
+                감성적</button>
+              <button onclick="setTone(this)"
+                class="tone-btn px-3 py-2.5 rounded-xl text-sm border-2 border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">⚡
+                간결한</button>
             </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">출력 형식</label>
-            <div class="flex flex-wrap gap-2">
-              <button onclick="setFormat(this)"
-                class="format-btn px-3 py-1.5 rounded-lg text-xs border border-purple-400 bg-purple-50 text-purple-600 font-medium transition-all">📝
-                문단</button>
-              <button onclick="setFormat(this)"
-                class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">•
-                목록</button>
-              <button onclick="setFormat(this)"
-                class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">🔢
-                단계별</button>
-              <button onclick="setFormat(this)"
-                class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">❓
-                Q&A형</button>
-              <button onclick="setFormat(this)"
-                class="format-btn px-3 py-1.5 rounded-lg text-xs border border-gray-200 text-gray-600 font-medium transition-all hover:border-purple-300">📊
-                표</button>
-            </div>
-          </div>
+
           <!-- 프레임워크 선택 -->
           <div>
             <div class="flex items-center justify-between mb-2">
@@ -1315,7 +1308,6 @@
 
     // ─── 상태 ───────────────────────────────────────────
     let selectedTone = '전문적';
-    let selectedFormat = '📝 문단';
     let selectedCategory = '마케팅';
     let selectedImgPurpose = 'recreate';
     let selectedFramework = 'costar';
@@ -1337,29 +1329,53 @@
     // ─── 자동 추천 매트릭스 ──────────────────────────────
     // [category, tone 키워드] → { fw, reason }
     function getRecommendation(category, tone) {
-      const t = tone.replace(/[🎯😊💡📋]/g, '').trim();
+      // 이모지 제거 후 순수 텍스트만 추출
+      const t = tone.replace(/[^\uAC00-\uD7A3\u0041-\u007A\s]/g, '').trim();
       const c = category;
 
+      // 코딩 / 데이터 → RISEN (단계별 논리 최적)
       if (c === '코딩' || c === '데이터 분석')
         return { fw: 'risen', reason: `${c}은 단계별 지시 구조인 RISEN이 가장 정확합니다` };
 
-      if (c === '교육')
-        return { fw: 'risen', reason: '교육 콘텐츠는 단계적 흐름의 RISEN이 효과적입니다' };
-
+      // 번역 → RTF (간결한 3요소)
       if (c === '번역')
         return { fw: 'rtf', reason: '번역은 역할·작업·형식만 명확하면 되므로 RTF가 최적입니다' };
 
-      if ((c === '마케팅' || c === '글쓰기') && (t === '친근한' || t === '창의적'))
-        return { fw: 'care', reason: `${t} 톤의 ${c}엔 예시 기반 CARE가 창의적 출력에 유리합니다` };
+      // 교육 → RISEN
+      if (c === '교육')
+        return { fw: 'risen', reason: '교육 콘텐츠는 단계적 흐름의 RISEN이 효과적입니다' };
 
-      if (c === '비즈니스' && t === '격식체')
+      // 간결한 → APE (핵심만 담는 구조)
+      if (t === '간결한')
+        return { fw: 'ape', reason: '간결한 톤에는 3요소로 핵심만 담는 APE가 딱입니다' };
+
+      // 창의적 → CARE (예시 기반)
+      if (t === '창의적')
+        return { fw: 'care', reason: '창의적 톤엔 예시를 포함한 CARE가 독창적 출력에 유리합니다' };
+
+      // 유머러스 / 감성적 + 마케팅/글쓰기 → CARE
+      if ((t === '유머러스' || t === '감성적') && (c === '마케팅' || c === '글쓰기'))
+        return { fw: 'care', reason: `${t} 톤의 ${c}엔 예시 기반 CARE가 감성적 출력에 유리합니다` };
+
+      // 설득력 + 마케팅 → CO-STAR (설득 6단계 구조)
+      if (t === '설득력' && c === '마케팅')
+        return { fw: 'costar', reason: '설득력 마케팅엔 CO-STAR의 6단계 구조가 가장 완성도가 높습니다' };
+
+      // 격식체 / 전문적 + 비즈니스 → PROMPT (6요소 완전)
+      if ((t === '격식체' || t === '전문적') && c === '비즈니스')
         return { fw: 'prompt', reason: '격식 비즈니스엔 6요소를 빠짐없이 채우는 PROMPT가 가장 정밀합니다' };
 
-      if (c === '비즈니스' && t === '친근한')
+      // 친근한 + 비즈니스 → APE
+      if (t === '친근한' && c === '비즈니스')
         return { fw: 'ape', reason: '친근한 비즈니스 메시지엔 간결한 APE가 딱입니다' };
 
-      if ((c === '마케팅' || c === '글쓰기' || c === '비즈니스') && (t === '전문적' || t === '격식체'))
+      // 전문적 / 격식체 + 마케팅/글쓰기 → CO-STAR
+      if ((t === '전문적' || t === '격식체') && (c === '마케팅' || c === '글쓰기'))
         return { fw: 'costar', reason: `${t} 톤의 ${c}엔 6단계 CO-STAR가 가장 완성도가 높습니다` };
+
+      // 친근한 + 마케팅/글쓰기 → CARE
+      if (t === '친근한' && (c === '마케팅' || c === '글쓰기'))
+        return { fw: 'care', reason: '친근한 톤의 콘텐츠엔 예시 기반 CARE가 자연스러운 출력에 유리합니다' };
 
       // 기본값
       return { fw: 'costar', reason: '범용 콘텐츠엔 CO-STAR가 가장 안정적입니다' };
@@ -1431,23 +1447,16 @@
       '전문적': '전문적이고 신뢰감 있는 어조',
       '친근한': '친근하고 편안한 구어체',
       '창의적': '독창적이고 흥미로운 표현',
-      '격식체': '정중하고 격식 있는 문어체'
-    };
-    const formatMap = {
-      '문단': '완성된 문단 형식',
-      '목록': '글머리 목록(• ) 형식',
-      '단계별': '번호가 있는 단계별 목록',
-      'Q&A형': '질문-답변(Q&A) 형식',
-      '표': '표(Markdown table) 형식'
+      '격식체': '정중하고 격식 있는 문어체',
+      '설득력': '설득력 있고 확신에 찬 어조',
+      '유머러스': '위트 있고 재치 있는 가벼운 표현',
+      '감성적': '따뜻하고 공감 가는 감성적 어조',
+      '간결한': '핵심만 담은 간결하고 명확한 문체'
     };
 
     function getToneText(t) {
       for (const [k, v] of Object.entries(toneMap)) if (t.includes(k)) return v;
       return '전문적이고 신뢰감 있는 어조';
-    }
-    function getFormatText(f) {
-      for (const [k, v] of Object.entries(formatMap)) if (f.includes(k)) return v;
-      return '완성된 문단 형식';
     }
 
     function buildByFramework(fw, goal, target, tone, format, category) {
@@ -1647,15 +1656,6 @@ ${t}`
       isManualFw = false;   // 톤 바뀌면 자동 추천 재활성화
       autoSelectFramework();
     }
-    function setFormat(btn) {
-      document.querySelectorAll('.format-btn').forEach(b => {
-        b.classList.remove('active', 'border-purple-400', 'bg-purple-50', 'text-purple-600');
-        b.classList.add('border-gray-200', 'text-gray-600');
-      });
-      btn.classList.remove('border-gray-200', 'text-gray-600');
-      btn.classList.add('active', 'border-purple-400', 'bg-purple-50', 'text-purple-600');
-      selectedFormat = btn.textContent.trim();
-    }
 
     async function generatePrompt() {
       if (isGenerating) return;
@@ -1678,7 +1678,6 @@ ${t}`
         const target = document.getElementById('targetInput').value.trim();
         const fw = FW_META[selectedFramework];
         const toneText = getToneText(selectedTone);
-        const formatText = getFormatText(selectedFormat);
 
         const metaPrompt =
           `당신은 세계 최고 수준의 AI 프롬프트 엔지니어입니다.
@@ -1689,7 +1688,6 @@ ${t}`
 - 카테고리: ${selectedCategory}
 ${target ? `- 대상 독자: ${target}` : ''}
 - 톤 & 스타일: ${toneText}
-- 출력 형식: ${formatText}
 
 【사용할 프레임워크】
 ${fw.label} — ${fw.desc}
