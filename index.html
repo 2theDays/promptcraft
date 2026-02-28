@@ -460,6 +460,84 @@
       transform: scale(1.03);
       transition: all 0.15s ease;
     }
+
+    /* 정보 모달 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      z-index: 10001;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 24px;
+      max-width: 400px;
+      width: 100%;
+      overflow: hidden;
+      animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    @keyframes modalPop {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .profile-img-container {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .profile-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 4px solid white;
+      margin: 0 auto;
+      object-fit: cover;
+      background: white;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 팁 모달 전용 */
+    #tipModal .tip-card {
+      background: #f8faff;
+      border: 1px solid #e0e7ff;
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 16px;
+      text-align: left;
+    }
+
+    #tipModal .tip-example {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #374151;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 
@@ -483,10 +561,10 @@
           <span id="myPromptsBadge"
             class="hidden absolute -top-2 -right-3 w-4 h-4 bg-purple-500 text-white text-xs rounded-full flex items-center justify-center font-bold"></span>
         </a>
-        <a href="#" onclick="showCommunity(event)" class="hover:text-purple-600 transition-colors">커뮤니티</a>
-        <button id="startFreeBtn" onclick="scrollToInputSection()"
+        <a href="#" onclick="openAboutModal(event)" class="hover:text-purple-600 transition-colors">정보</a>
+        <button id="tipBtn" onclick="openTipModal()"
           class="gradient-bg text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-all shadow-sm">
-          🚀 지금 시작하기
+          💡 오늘의 팁
         </button>
       </nav>
     </div>
@@ -708,7 +786,9 @@
           <div id="popularTemplates" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-semibold text-gray-700 text-sm">🔥 인기 템플릿</h3>
-              <span class="text-xs text-gray-400">클릭하면 바로 적용</span>
+              <span
+                class="text-xs font-bold text-purple-600 animate-pulse bg-purple-50 px-2 py-1 rounded-lg border border-purple-100">✨
+                클릭하면 바로 실행됩니다.</span>
             </div>
             <!-- 카테고리 탭 -->
             <div class="flex gap-1.5 flex-wrap mb-4" id="tmplCatBtns">
@@ -1133,6 +1213,77 @@
 
     // 히어로/네비 CTA 버튼 → 입력 섹션으로 스크롤 (scrollToMain 별칭)
     window.scrollToInputSection = window.scrollToMain;
+
+    const PROMPT_TIPS = [
+      { title: "🎭 페르소나 설정하기", desc: "AI에게 구체적인 '직업'이나 '성격'을 부여해보세요. 답변의 전문성이 비약적으로 상승합니다.", example: "예: '너는 10년 차 수석 마케터야. 20대 타겟의 카피라이팅 전문가로서 답변해줘.'" },
+      { title: "📋 단계별 지시", desc: "한번에 결과를 요구하지 말고 단계를 나누어보세요. 논리적인 오류가 줄어듭니다.", example: "예: '1. 먼저 시장 상황을 분석해줘. 2. 그 후 해결책을 3가지 제시해줘.'" },
+      { title: "🎯 출력 형식 지정", desc: "표, 리스트, JSON 등 원하는 형태를 명시하세요. 데이터 정리가 훨씬 쉬워집니다.", example: "예: '결과물은 표(Table) 형식으로 정리하고 마지막에 요약 섹션을 추가해줘.'" },
+      { title: "🚫 부정적 제약 조건", desc: "포함하지 말아야 할 내용을 알려주면 AI가 엉뚱한 소리를 하는 것을 막을 수 있습니다.", example: "예: '전문 용어는 빼고 초등학생도 이해할 수 있는 쉬운 단어만 사용해줘.'" },
+      { title: "💡 예시 제공 (Few-shot)", desc: "원하는 답변 스타일의 예시를 하나만 줘도 AI의 출력이 훨씬 정확해집니다.", example: "예: '이런 느낌으로 작성해줘: [여기에 예시 텍스트 입력]'" },
+      { title: "📝 핵심 요약 요청", desc: "긴 글을 읽기 전에 핵심만 파악하고 싶을 때 사용하세요.", example: "예: '위 내용을 핵심 사항 3가지만 불렛포인트로 요약해줘.'" },
+      { title: "🔍 답변 근거 요청", desc: "AI가 왜 그런 답을 했는지 이유를 물어보면 답변의 신뢰도를 체크할 수 있습니다.", example: "예: '네가 제안한 전략의 논리적 근거와 기대 효과를 설명해줘.'" },
+      { title: "🔄 자격 비판(Self-Correction)", desc: "AI에게 자신의 답변을 스스로 비판하고 개선해보라고 시켜보세요.", example: "예: '위 답변에서 논리적 허점을 찾고, 더 설득력 있게 수정해줘.'" },
+      { title: "👥 대상 독자 구체화", desc: "누가 읽을 글인지 명확히 할수록 AI는 더 적절한 언어를 선택합니다.", example: "예: '이 내용은 코딩을 전혀 모르는 60대 어르신들을 위한 설명이야.'" },
+      { title: "⚡ 톤앤매너 조절", desc: "분위기를 지정하여 브랜드 이미지나 상황에 맞는 글을 얻으세요.", example: "예: '약간 위트 있고 MZ세대 유행어를 섞어서 친근하게 써줘.'" },
+      { title: "📏 분량 제어", desc: "원하는 길이를 정확히 지정하면 불필요한 사족을 줄일 수 있습니다.", example: "예: '공백 포함 500자 내외로 간결하게 작성해줘.'" },
+      { title: "🌈 비유와 은유 사용", desc: "복잡한 개념을 설명할 때 비유를 요청하면 이해가 훨씬 빨라집니다.", example: "예: '양자역학을 5살 아이에게 사탕을 비유로 들어 설명해줘.'" },
+      { title: "✅ 단계별 검증", desc: "답을 내기 전에 먼저 계획을 세우게 한 뒤 진행 버튼을 누르세요.", example: "예: '작업 계획을 먼저 세워주고, 내가 승인하면 그때 본문을 써줘.'" },
+      { title: "🏷️ 키워드 추출", desc: "방대한 텍스트에서 중요한 단어만 골라내고 싶을 때 유용합니다.", example: "예: '이 기사에서 검색 최적화(SEO)에 유리한 핵심 키워드 10개만 뽑아줘.'" },
+      { title: "💻 정형 데이터 변환", desc: "텍스트 정보를 엑셀이나 프로그래밍에 쓰기 좋은 형식으로 바꿀 수 있습니다.", example: "예: '위 정보를 마크다운 표(CSV) 형식으로 변환해줘.'" },
+      { title: "🧠 브레인스토밍 모드", desc: "정답보다는 다양한 아이디어가 필요할 때 '창의성'을 자극하세요.", example: "예: '기존의 틀을 깬 기상천외한 마케팅 아이디어 20가지만 제안해줘.'" },
+      { title: "🎭 역할극(Role-play)", desc: "특정 상황의 인물과 대화하듯 질문하면 통찰력 있는 답을 얻습니다.", example: "예: '너는 깐깐한 투자자야. 내 사업 계획서의 약점을 집요하게 공격해봐.'" },
+      { title: "🔡 창의적 제약", desc: "특정한 제약을 걸면 AI는 더 창의적인 대안을 찾아내기도 합니다.", example: "예: '한자어를 사용하지 말고 순우리말로만 따뜻한 편지를 써줘.'" },
+      { title: "🌍 맥락 유지 번역", desc: "단순 직역이 아니라 전체 분위기에 맞는 번역을 요청하세요.", example: "예: '이 비즈니스 메일을 미국 스타트업 문화에 맞게 아주 캐주얼하게 번역해줘.'" },
+      { title: "🛠️ 코드 리뷰 및 개선", desc: "작성한 코드의 성능을 높이거나 가독성을 개선할 때 사용합니다.", example: "예: '이 파이썬 코드를 시간 복잡도 관점에서 최적화하고 주석을 달아줘.'" },
+      { title: "🐛 버그 분석", desc: "에러 메시지와 함께 코드를 주면 해결책을 빠르게 찾아줍니다.", example: "예: '여기서 발생한 404 에러의 원인과 코드 내 수정 포인트를 짚어줘.'" },
+      { title: "📖 교육 커리큘럼 설계", desc: "새로운 분야를 공부할 때 학습 로드맵을 그려달라고 해보세요.", example: "예: '비전공자가 3개월 안에 노드JS를 마스터할 수 있는 주차별 학습 계획을 짜줘.'" },
+      { title: "❓ 소크라테스 대화법", desc: "답을 바로 주지 말고 내가 생각하게 유도해달라고 요청하세요.", example: "예: '나에게 질문을 던져서 내가 직접 정답을 유추할 수 있게 도와줘.'" },
+      { title: "👶 쉬운 설명(ELI5)", desc: "아주 복잡한 기술이나 이론을 초보자 눈높이로 낮추고 싶을 때 사용합니다.", example: "예: '블록체인의 원리를 초등학생이 이해할 수 있게 아주 쉽게 설명해줘.'" },
+      { title: "📢 플랫폼별 최적화", desc: "하나의 내용을 인스타, 유튜브, 블로그용으로 각각 바꿔보세요.", example: "예: '이 기사 내용을 인스타그램 피드용 이미지 문구 5개로 변형해줘.'" },
+      { title: "😊 감성 분석", desc: "고객 리뷰나 피드백의 감정을 수치화하고 분석할 수 있습니다.", example: "예: '이 100개의 리뷰가 긍정인지 부정인지 분류하고 주요 불만 사항을 정리해줘.'" },
+      { title: "🕵️ 팩트 체크 도우미", desc: "정보의 진위 여부를 따지기 위해 근거나 반박 논리를 세울 때 사용합니다.", example: "예: '이 주장에 대해 과학적인 반박 가능한 근거 문헌들을 찾아 정리해줘.'" },
+      { title: "📐 아날로그 비유", desc: "추상적인 개념을 물리적인 사물에 빗대어 설명해달라고 하세요.", example: "예: '컴퓨터의 운영체제를 호텔 지배인에 비유해서 설명해줘.'" },
+      { title: "📝 글의 개요(Outline) 짜기", desc: "본문을 쓰기 전 목차부터 잡으면 글의 구조가 탄탄해집니다.", example: "예: '인공지능의 미래에 대한 칼럼의 전체적인 목차와 핵심 내용을 구성해줘.'" },
+      { title: "📧 이메일 제목 짓기", desc: "클릭률을 높이는 감각적인 메일 제목이 필요할 때 요청하세요.", example: "예: '뉴스레터 개봉률을 높일 수 있는 호기심 유발형 제목 10개를 뽑아줘.'" },
+      { title: "📰 헤드라인 카피라이팅", desc: "사람들의 시선을 단번에 사로잡는 강력한 한 문장을 만듭니다.", example: "예: '이 랜딩 페이지의 메인 헤드라인을 고객의 공포와 희망을 자극하는 문구로 지어줘.'" },
+      { title: "🔍 오탈자 및 문법 교정", desc: "단순 오타 교정을 넘어 더 매끄러운 문장으로 다듬어달라고 하세요.", example: "예: '이 글의 문법적 오류를 잡고, 문맥이 더 자연스럽게 흘러가도록 윤문해줘.'" },
+      { title: "📈 문장 흐름 개선", desc: "글이 뚝뚝 끊긴다면 접속사와 문장 구조를 손봐달라고 하세요.", example: "예: '문장 간의 연결성을 높여서 전체적으로 술술 읽히는 부드운 글을 만들어줘.'" },
+      { title: "💎 어휘력 향상", desc: "흔한 단어 대신 더 고급스럽거나 적합한 어휘로 교체해보세요.", example: "예: '이 글에서 자주 쓰인 평범한 단어들을 전문적이고 멋진 표현들로 바꿔줘.'" },
+      { title: "💡 초안에 대한 피드백", desc: "내가 쓴 글의 장단점을 분석받고 싶을 때 요청합니다.", example: "예: '내가 쓴 비즈니스 제안서를 보고, 설득력이 부족한 부분 3가지만 짚어줘.'" },
+      { title: "🎨 창작 영감 얻기", desc: "글이 안 써질 때 새로운 아이디어를 얻는 트리거로 활용하세요.", example: "예: '겨울을 배경으로 한 미스터리 스릴러 소설의 반전 요소 5가지만 제안해줘.'" },
+      { title: "👤 캐릭터 설정", desc: "이야기나 마케팅에 쓸 인물 페르소나를 아주 구체화할 때 사용합니다.", example: "예: '이 소설의 악역 캐릭터의 숨겨진 과거와 성격 결함, 습관들을 입체적으로 설정해줘.'" },
+      { title: "🎬 영상 스크립트 작성", desc: "유튜브나 광고 영상의 흐름과 대사, 자막 효과까지 구성합니다.", example: "예: '30초 분량의 숏폼 영상 대본을 짜줘. 훅은 3초 이내에 승부가 나야 해.'" },
+      { title: "🎤 면접 질문 리스트", desc: "특정 직무나 상황에 맞는 예상 질문을 뽑아 연습하세요.", example: "예: '데이터 엔지니어 기술 면접에서 나올 만한 까다로운 질문 10개만 리스트업해줘.'" },
+      { title: "🌟 STAR 기법 답변", desc: "면접 답변을 가장 논리적인 구조(Situation, Task, Action, Result)로 짭니다.", example: "예: '나의 갈등 해결 경험을 STAR 기법에 맞춰서 논리적인 답변으로 정리해줘.'" },
+      { title: "📊 SWOT 분석", desc: "사업이나 개인의 강점, 약점, 기회, 위협을 분석할 때 유용합니다.", example: "예: '우리 카페의 현재 상황에 대해 강점, 약점, 기회, 위협(SWOT)으로 분석해줘.'" },
+      { title: "🛍️ 고객 페르소나 설계", desc: "마케팅 타겟을 실존 인물처럼 아주 구체적으로 설정해달라고 하세요.", example: "예: '우리 커피 머신을 살 확률이 가장 높은 30대 1인 가구 직장인의 하루 일과를 그려줘.'" },
+      { title: "💔 고객 페인포인트(Pain Point) 찾기", desc: "사람들이 겪는 실제 불편함을 AI와 함께 고민해봅니다.", example: "예: '현재 배달 앱 시장에서 소비자들이 가장 답답해하는 부분 5가지를 분석해줘.'" },
+      { title: "💎 가치 제안(Value Prop)", desc: "제품이나 서비스의 핵심 가치를 매력적으로 정의합니다.", example: "예: '우리 운동 앱의 유일무이한 강점을 한 문장으로 고객에게 어필하도록 써줘.'" },
+      { title: "📣 클릭 유도 CTA", desc: "버튼 클릭이나 행동을 유도하는 매력적인 문구를 만듭니다.", example: "예: '지금 바로 구매하고 싶은 욕구를 자극하는 강력한 CTA 문구 5개를 제안해줘.'" },
+      { title: "🔍 SEO 키워드 전략", desc: "검색 엔진 상위 노출을 위한 전략적인 키워드 배치를 수행합니다.", example: "예: '이 블로그 글이 네이버 검색 상위에 노출되려면 어떤 키워드를 더 넣어야 할까?'" },
+      { title: "🧐 논리적 모순 체크", desc: "자신의 주장에 논리적 빈틈이 없는지 AI에게 검토를 맡기세요.", example: "예: '이 기획안에 담긴 논리적 비약이나 앞뒤가 맞지 않는 주장을 찾아 지적해줘.'" },
+      { title: "🌐 다각도 관점 분석", desc: "하나의 이슈를 다양한 입장에서 바라보고 싶을 때 사용합니다.", example: "예: '이 사회 문제에 대해 정부, 시민단체, 기업 각각의 입장에서 의견을 정리해줘.'" },
+      { title: "🔁 반복적 개선(Iterative)", desc: "한 번의 답변으로 끝내지 말고 계속 다듬어달라고 요청하세요.", example: "예: '방금 답변이 조금 긴데, 핵심만 남겨서 20% 정도 분량을 줄여서 다시 써줘.'" },
+      { title: "🗓️ 실행 계획 수립", desc: "아이디어만 내는 것에 그치지 않고 구체적인 일정을 잡습니다. ", example: "예: '이 프로젝트를 4주 안에 끝낼 수 있게 주차별 상세 투두 리스트(To-Do)를 짜줘.'" },
+      { title: "🧩 비유적 비교 분석", desc: "두 대상을 아주 신선하게 비교하여 통찰을 얻습니다.", example: "예: '애플과 테슬라의 전략 차이를 강물과 바다의 특징에 비유해서 분석해줘.'" },
+      { title: "💬 가상 대화 생성", desc: "두 인물의 대화를 통해 복잡한 상황을 시뮬레이션합니다.", example: "예: '자산가와 대학생이 투자 철학에 대해 논쟁하는 대화 스크립트를 만들어줘.'" },
+      { title: "🗂️ 정보 분류 및 라벨링", desc: "마구잡이로 적힌 메모를 카테고리별로 정갈하게 분류해줍니다.", example: "예: '이 50개의 아이디어 메모를 성격에 따라 5가지 카테고리로 묶어 정리해줘.'" },
+      { title: "💡 사고의 확장 요청", desc: "내가 생각하지 못한 '사각지대'를 알려달라고 하세요.", example: "예: '내가 이 사업을 시작할 때 놓치고 있을 법한 리스크나 변수를 10가지만 짚어줘.'" },
+      { title: "🏁 행동 촉구 요약", desc: "회의나 대화의 마지막에 '누가 무엇을 해야 할지' 뽑아낼 때 유용합니다.", example: "예: '오늘 회의 내용 중 결정된 사항과 각 담당자별 액션 아이템만 명확히 뽑아줘.'" }
+    ];
+
+    window.openTipModal = function () {
+      const tip = PROMPT_TIPS[Math.floor(Math.random() * PROMPT_TIPS.length)];
+      const modal = document.getElementById('tipModal');
+      document.getElementById('tipTitle').textContent = tip.title;
+      document.getElementById('tipDesc').textContent = tip.desc;
+      document.getElementById('tipExample').textContent = tip.example;
+      modal.classList.add('active');
+    };
+
+    window.closeTipModal = function () {
+      document.getElementById('tipModal').classList.remove('active');
+    };
 
     // 이미지 비율 선택기
     window._selectedAR = 'auto';
@@ -1869,7 +2020,12 @@ ${fw.label} — ${fw.desc}
       });
       isManualFw = false;
       autoSelectFramework();
-      showToast(`✨ "${t.title}" 템플릿 적용! 생성 버튼을 눌러보세요`);
+      showToast(`✨ "${t.title}" 템플릿 즉시 적용!`);
+
+      // 즉시 생성 실행
+      setTimeout(() => {
+        generatePrompt();
+      }, 100);
     }
 
 
@@ -2512,8 +2668,84 @@ ${extra ? `- 추가 요청사항 반드시 반영: ${extra}` : ''}
     document.addEventListener('DOMContentLoaded', () => {
       initStorage();
     });
-
   </script>
+
+  <!-- 정보 모달 (About) -->
+  <div id="aboutModal" class="modal-overlay" onclick="closeAboutModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="profile-img-container">
+        <img src="assets/creator.png" alt="제작자 황인도" class="profile-img">
+      </div>
+      <div class="p-8 text-center">
+        <h3 class="text-2xl font-bold text-gray-800 mb-1">황인도</h3>
+        <p class="text-purple-600 font-medium text-sm mb-6">PromptCraft Creator</p>
+
+        <div class="space-y-4 text-left">
+          <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+            <span class="text-xl">📧</span>
+            <div>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email</p>
+              <a href="mailto:hid2000@korea.ac.kr"
+                class="text-sm text-gray-700 hover:text-purple-600 font-medium font-bold">hid2000@korea.ac.kr</a>
+            </div>
+          </div>
+          <p class="text-xs text-center text-gray-400 mt-10">
+            &copy; 2026 Hwang In-do. All rights reserved.
+          </p>
+        </div>
+
+        <button onclick="closeAboutModal()"
+          class="w-full mt-8 bg-gray-900 text-white py-3 rounded-xl font-semibold text-sm hover:bg-gray-800 transition-colors">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 제작자 정보 모달 열기/닫기
+    function openAboutModal(e) {
+      if (e) e.preventDefault();
+      document.getElementById('aboutModal').classList.add('active');
+      document.body.style.overflow = 'hidden'; // 스크롤 방지
+    }
+    function closeAboutModal() {
+      document.getElementById('aboutModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  </script>
+
+  <!-- 오늘의 팁 모달 -->
+  <div id="tipModal" class="modal-overlay" onclick="closeTipModal()">
+    <div class="modal-content !max-w-md" onclick="event.stopPropagation()">
+      <div class="p-8 text-center">
+        <div class="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">💡</div>
+        <h3 class="text-2xl font-bold text-gray-800 mb-2">오늘의 프롬프트 팁</h3>
+        <p class="text-gray-500 text-sm">클릭할 때마다 새로운 팁을 알려드려요!</p>
+
+        <div class="tip-card">
+          <h4 id="tipTitle" class="font-bold text-indigo-900 mb-2">🎭 페르소나 설정하기</h4>
+          <p id="tipDesc" class="text-sm text-indigo-800/80 leading-relaxed">
+            AI에게 구체적인 '직업'이나 '성격'을 부여해보세요. 답변의 전문성이 비약적으로 상승합니다.
+          </p>
+          <div id="tipExample" class="tip-example">
+            예: "너는 10년 차 수석 마케터야. 20대 타겟의 카피라이팅 전문가로서 답변해줘."
+          </div>
+        </div>
+
+        <div class="mt-8 flex gap-3">
+          <button onclick="openTipModal()"
+            class="flex-1 bg-indigo-50 text-indigo-600 py-3 rounded-xl font-semibold text-sm hover:bg-indigo-100 transition-colors">
+            다른 팁 보기
+          </button>
+          <button onclick="closeTipModal()"
+            class="flex-[1.5] bg-indigo-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">
+            확인했어요
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
