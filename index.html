@@ -115,7 +115,8 @@
 
       #saveMobileBtn,
       #tipMobileBtn,
-      #infoMobileBtn {
+      #infoMobileBtn,
+      #tmplMobileBtn {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -636,6 +637,7 @@
 
       <!-- 모바일 전용 버튼 -->
       <div class="mobile-only items-center gap-2 flex-shrink-0">
+        <button onclick="scrollToTemplates(event)" class="p-2 text-2xl" id="tmplMobileBtn" title="템플릿">🔥</button>
         <button onclick="openAboutModal(event)" class="p-2 text-2xl" id="infoMobileBtn">ℹ️</button>
         <button onclick="openMyPrompts(event)" class="p-2 text-2xl" id="saveMobileBtn">💾</button>
         <button onclick="openTipModal()" class="p-2 text-2xl" id="tipMobileBtn">💡</button>
@@ -685,7 +687,7 @@
         <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3 px-1">카테고리 선택</h2>
         <div class="scroll-wrapper relative flex items-center">
           <button onclick="scrollChipLeft(this)"
-            class="left-btn absolute -left-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
+            class="left-btn absolute left-0 md:-left-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
@@ -714,7 +716,7 @@
               분석</button>
           </div>
           <button onclick="scrollChipRight(this)"
-            class="right-btn absolute -right-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
+            class="right-btn absolute right-0 md:-right-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
@@ -793,7 +795,7 @@
             </div>
             <div class="scroll-wrapper relative flex items-center">
               <button onclick="scrollChipLeft(this)"
-                class="left-btn absolute -left-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
+                class="left-btn absolute left-0 md:-left-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
@@ -822,7 +824,7 @@
                     class="rec-dot"></span></button>
               </div>
               <button onclick="scrollChipRight(this)"
-                class="right-btn absolute -right-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
+                class="right-btn absolute right-0 md:-right-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
@@ -849,7 +851,7 @@
             </div>
             <div id="emptyState" class="py-10 text-center">
               <div class="text-5xl mb-3">🪄</div>
-              <p class="text-gray-400 text-sm">왼쪽에서 정보를 입력하고<br />생성 버튼을 눌러보세요</p>
+              <p class="text-gray-400 text-sm">정보를 입력하고<br />생성 버튼을 눌러보세요</p>
             </div>
             <div id="resultContent" class="hidden">
               <!-- 프레임워크 배지 -->
@@ -890,7 +892,7 @@
             <!-- 카테고리 탭 (가로 스크롤 지원) -->
             <div class="scroll-wrapper relative flex items-center mb-4">
               <button onclick="scrollChipLeft(this)"
-                class="left-btn absolute -left-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
+                class="left-btn absolute left-0 md:-left-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
@@ -915,7 +917,7 @@
                   개발</button>
               </div>
               <button onclick="scrollChipRight(this)"
-                class="right-btn absolute -right-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
+                class="right-btn absolute right-0 md:-right-4 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-500 hover:text-purple-600 transition-all opacity-0 pointer-events-none">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
